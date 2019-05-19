@@ -1,6 +1,6 @@
-function [ f,f_dak ] = PWAapprox( x )
-%UNTITLED3 Summary of this function goes here
-%   Detailed explanation goes here
+function [fun_int] = PWAapprox(x)
+
+% input vector
 a1 = x(1);
 a2 = x(2);
 a3 = x(3);
@@ -13,6 +13,7 @@ u1 = x(9);
 u2 = x(10);
 u3 = x(11);
 
+% computing f and f_dak
 for k = 1:1500
     u(k) = k/100;
     if u(k) < 2
@@ -28,15 +29,20 @@ for k = 1:1500
     end
     
     if u(k) < u1
-        f_dak(k) = a1 + b1*u;
+        f_dak(k) = a1 + b1*u(k);
     elseif u(k) < u2
-        f_dak(k) = a2 + b2*u;
+        f_dak(k) = a2 + b2*u(k);
     elseif u(k) < u3
-        f_dak(k) = a3 + b3*u;
+        f_dak(k) = a3 + b3*u(k);
     else
-        f_dak(k) = a4 + b4*u;
+        f_dak(k) = a4 + b4*u(k);
     end
 end
+
+% computing squared area between f and f_dak
+% fun = integral((f-f_dak).^2,0,15);
+fun = (f - f_dak).^2;
+fun_int = trapz(u,fun);
 
 end
 

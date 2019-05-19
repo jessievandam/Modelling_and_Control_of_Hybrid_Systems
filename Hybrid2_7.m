@@ -1,5 +1,6 @@
 %% SC4160 MODELLING AND CONTROL OF HYBRID SYSTEMS
-% Jessie van Dam () and Miranda van Duijn (4355776)
+% Step 2.7
+% Jessie van Dam (4395832) and Miranda van Duijn (4355776)
 clear all; close all; clc;
 addpath C:\Users\Miranda\hysdel-2.0.6-MINGW32_NT-5.1-i686
 
