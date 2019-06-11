@@ -207,19 +207,13 @@ W2_deltad = zeros(6*dim.Np,4*dim.Np);
 W2_ud = zeros(6*dim.Np,dim.Np);
 W2_zdd = zeros(6*dim.Np,4*dim.Np);
 
-for n1 = 1:6*dim.Np %rows
-    for n2 = 1:dim.Np %columns
+for n1 = 1:dim.Np
+    for n2 = 1:dim.Np
         if n1 == n2
-            W2_deltab1(n1,n2) = 1;
+        W2_deltab1(n1,n1) = 1;
         end
         
-        if n1 > (dim.Np) && n1 < (2*dim.Np+1)
-            if n1 == n2+dim.Np
-                W2_deltab2(n1,n2) = 1;
-            elseif n1 == n2+dim.Np+1
-                W2_deltab2(n1,n2) = -1;
-            end
-        end
+        
     end
 end
 

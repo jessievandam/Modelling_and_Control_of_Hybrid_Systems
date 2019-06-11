@@ -31,15 +31,10 @@ parD.u2    = 6.5;
 parD.u3    = 11;
 parD.u4    = 15;
 
-dim.Ts     = 0.20;  % in [h]
+dim.Ts     = 0.20; % in [h]
 dim.t      = 10;
-dim.Np     = 3;     % prediction horizon
-dim.Nc     = 2;     % control horizon
-dim.Wb1    = 3;     % weight in cost function battery 1
-dim.Wb2    = 4;     % weight in cost function battery 2
-dim.Wd     = 10;    % weight in cost function diesel generator
-dim.Wfuel  = 4;     % weight in cost function fuel
-dim.We     = 0.4;   % weight in cost function e?
+dim.Np     = 3; % prediction horizon
+dim.Nc     = 2; % control horizon
 
 %% Defining battery with matrices
 % Defining MLD matrices battery 1
@@ -53,7 +48,7 @@ MLDB1.E1 = [0; 0; -1; 1; 0; 0; 0; 0]; % E1 matrix battery 1
 MLDB1.E2 = [1; -1; 0; 0; 0; 0; -1; 1]; % E2 matrix battery 1
 MLDB1.E3 = [parB.u_up(1); parB.u_low(1)-eps; 0; 0; -parB.u_up(1); parB.u_low(1); parB.u_low(1); parB.u_up(1)]; % E3 matrix battery 1
 MLDB1.E4 = [0; 0; 0; 0; 1; -1; 1; -1]; % E4 matrix battery 1
-MLDB1.g5 = [parB.u_up(1); -eps; 0; parB.x_up(1); 0; 0; -parB.u_low(1); parB.u_up(1)]; % g5 matrix battery 1
+MLDB1.g5 = [parB.u_up(1); -eps; 0; parB.x_up(1); 0; 0; -parB.u_low(1); parB.u_up(1)]'; % g5 matrix battery 1
 
 % Defining MLD matrices battery 2
 MLDB2.A = 1;
@@ -66,7 +61,7 @@ MLDB2.E1 = [0; 0; -1; 1; 0; 0; 0; 0]; % E1 matrix battery 2
 MLDB2.E2 = [1; -1; 0; 0; 0; 0; -1; 1]; % E2 matrix battery 2
 MLDB2.E3 = [parB.u_up(2); parB.u_low(2)-eps; 0; 0; -parB.u_up(2); parB.u_low(2); parB.u_low(2); parB.u_up(2)]; % E3 matrix battery 2
 MLDB2.E4 = [0; 0; 0; 0; 1; -1; 1; -1]; % E4 matrix battery 2
-MLDB2.g5 = [parB.u_up(2); -eps; 0; parB.x_up(2); 0; 0; -parB.u_low(2); parB.u_up(2)]; % g5 matrix battery 2
+MLDB2.g5 = [parB.u_up(2); -eps; 0; parB.x_up(2); 0; 0; -parB.u_low(2); parB.u_up(2)]'; % g5 matrix battery 2
 
 %% Defining diesel generator with matrices
 MLDD.A = 1;
@@ -90,3 +85,30 @@ MLDD.E4 = [0 0 0 1 1 1 -1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
            0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 -1 1 -1 0]';
 MLDD.g5 = [1; parD.x_low; parD.x_up; 0; 0; 0; parD.u1; -eps; 0; 0; -parD.u1; parD.u2; -eps; 0; 0; -parD.u2; parD.u3; -eps; 0; 0; -parD.u3; parD.u4; -eps];
 
+%% Defining battery as MLD system using a for-loop
+x_b1 = zeros(1,dim.t+1);
+x_b2 = zeros(1,dim.t+1);
+z    = zeros(1,dim.t);
+
+u_b  = [0.5 0 0.1 3 5 1 1 0 1 1];
+s_b  = [1 1 1 1 0 0 0 1 0 1];
+
+for k = 1:dim.t
+    
+    if u_b(k) <= parB.u_up*(1-s_b(k))
+        if u_b(k) >= eps + (parB.u_low-eps)*s_b(k)
+            if z(k) <= parB.u_up*s_b(k)
+                if z(k) >= parB.u_low*s_b(k)
+                    if z(k) <= u_b(k) - parB.u_low*(1-s_b(k))
+                        if z(k) <= u_b(k) - parB.u_up*(1-s_b(k))
+                                z(k) = s_b(k)*u_b(k);
+                                x_b1(k+1) = parB.A*x_b1(k) - parB.eta_c(1)*u_b(k) + (parB.eta_d(1)-parB.eta_c(1))*z(k);
+                                x_b2(k+1) = parB.A*x_b2(k) - parB.eta_c(2)*u_b(k) + (parB.eta_d(2)-parB.eta_c(2))*z(k);
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+end
