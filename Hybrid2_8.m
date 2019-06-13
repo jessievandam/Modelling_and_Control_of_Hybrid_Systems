@@ -20,6 +20,7 @@ for np = 1:dim.Np
     M2.M2_b2(np,:) = (MLDB2.A)^np;
     M2.M2_d(np,:)  = (MLDD.A)^np;
 end
+clear np
 
 M2.M2 = [M2.M2_b1; M2.M2_b2; M2.M2_d];
 
@@ -36,6 +37,7 @@ for np1 = 1:dim.Np % over columns
     M1.M1_d_zd (1+(np2-1)*size(MLDD.A,1),1+(np1-1)*size(MLDD.B3,2):np1*size(MLDD.B3,2))    = MLDD.A^(np2-1)*MLDD.B3;
     end
 end
+clear np1
 
 for i = 1:dim.Np
     for j = 1:4*dim.Np
@@ -45,6 +47,7 @@ for i = 1:dim.Np
         end
     end
 end
+clear i j
 
 M1.M1_d = [M1.M1_d_delta M1.M1_d_u M1.M1_d_zd];
 
@@ -70,6 +73,7 @@ for np1 = 1:dim.Np % over columns
     M1.M1_b2_zd(1+(np2-1)*size(MLDB2.A,1),1+(np1-1)*size(MLDB2.B1,2):np1*size(MLDB2.B1,2))     = MLDB2.A^(np2-1)*MLDB2.B1;
     end
 end
+clear np1 np2
 
 % NOTE: MAYBE THIS CAN BE MADE MORE GENERAL (BUT IT'S A LOT OF WORK AND NOT
 % THAT NECESSARY)
@@ -86,6 +90,7 @@ for i = 1:dim.Np
         end
     end
 end
+clear i j
 
 M1.M1_b1 = [M1.M1_b1_delta M1.M1_b1_u M1.M1_b1_zd];
 M1.M1_b2 = [M1.M1_b2_delta M1.M1_b2_u M1.M1_b2_zd];
@@ -137,11 +142,12 @@ for np1 = 1:dim.Np % over columns
         F1.F1_b2_zd(1+(np2-1)*size(MLDB2.E4,1):np2*size(MLDB2.E4,1),1+(np1-1)*size(MLDB2.E4,2):np1*size(MLDB2.E4,2)) = MLDB2.E1*MLDB2.A^(np2-2)*MLDB2.B3;
         
         % For the diesel generator
-        F1.F1_d_u(1+(np2-1)*size(MLDD.E3,1):np2*size(MLDD.E3,1),1+(np1-1)*size(MLDD.E3,2):np1*size(MLDD.E3,2)) = MLDD.E1*MLDD.A^(np-2)*MLDD.B2;
-        F1.F1_d_zd(1+(np2-1)*size(MLDD.E4,1):np2*size(MLDD.E4,1),1+(np1-1)*size(MLDD.E4,2):np1*size(MLDD.E4,2)) = MLDD.E1*MLDD.A^(np-2)*MLDD.B3;
+        F1.F1_d_u(1+(np2-1)*size(MLDD.E3,1):np2*size(MLDD.E3,1),1+(np1-1)*size(MLDD.E3,2):np1*size(MLDD.E3,2)) = MLDD.E1*MLDD.A^(np2-2)*MLDD.B2;
+        F1.F1_d_zd(1+(np2-1)*size(MLDD.E4,1):np2*size(MLDD.E4,1),1+(np1-1)*size(MLDD.E4,2):np1*size(MLDD.E4,2)) = MLDD.E1*MLDD.A^(np2-2)*MLDD.B3;
         end
     end
 end
+clear np1 np2
 
 % Concatenating all submatrices
 F1.F1_b1 = [F1.F1_b1_delta F1.F1_b1_u F1.F1_b1_zd];
@@ -171,6 +177,7 @@ for n = 1:dim.Np
     end
     
 end
+clear n
 
 % Concatenating submatrices into complete F2.F2 matrix
 F2.F2_d = F2.F2_d_1 + F2.F2_d_2;
@@ -186,6 +193,7 @@ for n = 1:dim.Np
     F3.F3_b2(1+(n-1)*size(MLDB2.E1,1):n*size(MLDB2.E1,1),1:size(MLDB2.E1,2)) = -MLDB2.E1*MLDB2.A^(n-1);
     F3.F3_d(1+(n-1)*size(MLDD.E1,1):n*size(MLDD.E1,1),1:size(MLDD.E1,2)) = -MLDD.E1*MLDD.A^(n-1);
 end
+clear n
 
 F3.F3 = [F3.F3_b1 zeros(size(F3.F3_b1,1),size(F3.F3_b2,2)) zeros(size(F3.F3_b1,1),size(F3.F3_d,2));
       zeros(size(F3.F3_b2,1),size(F3.F3_b1,2)) F3.F3_b2 zeros(size(F3.F3_b2,1),size(F3.F3_d,2))
@@ -194,40 +202,46 @@ F3.F3 = [F3.F3_b1 zeros(size(F3.F3_b1,1),size(F3.F3_b2,2)) zeros(size(F3.F3_b1,1
 %% Constructing W matrices for optimization
 W1 = [ dim.Wb1*ones(1,dim.Np) dim.Wb2*ones(1,dim.Np) dim.Wd*ones(1,dim.Np)];
 
-%% W2 matrix
-W2_deltab1 = zeros(6*dim.Np,dim.Np);
-W2_ub1 = zeros(6*dim.Np,dim.Np);
-W2_zb1 = zeros(6*dim.Np,dim.Np);
+%% W2.W2 matrix
+W2.W2_deltab1 = zeros(6*dim.Np,dim.Np);
+W2.W2_ub1 = zeros(6*dim.Np,dim.Np);
+W2.W2_zb1 = zeros(6*dim.Np,dim.Np);
 
-W2_deltab2 = zeros(6*dim.Np,dim.Np);
-W2_ub2 = zeros(6*dim.Np,dim.Np);
-W2_zb2 = zeros(6*dim.Np,dim.Np);
+W2.W2_deltab2 = zeros(6*dim.Np,dim.Np);
+W2.W2_ub2 = zeros(6*dim.Np,dim.Np);
+W2.W2_zb2 = zeros(6*dim.Np,dim.Np);
 
-W2_deltad = zeros(6*dim.Np,4*dim.Np);
-W2_ud = zeros(6*dim.Np,dim.Np);
-W2_zdd = zeros(6*dim.Np,4*dim.Np);
+W2.W2_deltad = zeros(6*dim.Np,4*dim.Np);
+W2.W2_ud = zeros(6*dim.Np,dim.Np);
+W2.W2_zdd = zeros(6*dim.Np,4*dim.Np);
 
-for n1 = 1:6*dim.Np %rows
-    for n2 = 1:dim.Np %columns
-        if n1 == n2
-            W2_deltab1(n1,n2) = 1;
+for nr = 1:6*dim.Np %rows
+    for nc = 1:dim.Np %columns
+        if nr == nc
+            W2.W2_deltab1(nr,nc) = 1;
         end
         
-        if n1 > (dim.Np) && n1 < (2*dim.Np+1)
-            if n1 == n2+dim.Np
-                W2_deltab2(n1,n2) = 1;
-            elseif n1 == n2+dim.Np+1
-                W2_deltab2(n1,n2) = -1;
+        if nr > (dim.Np) && nr < (2*dim.Np+1)
+            if nr == nc+dim.Np
+                W2.W2_deltab2(nr,nc) = 1;
+            elseif nr == nc+dim.Np+1
+                W2.W2_deltab2(nr,nc) = -1;
             end
+        end
+                
+    end
+    
+    for nc = 1:4*dim.Np
+        if nr == nc + 2*dim.Np
+            W2.W2_deltad(nr,nc) = 1;
+        elseif nr == nc + 3*dim.Np + 1
+            W2.W2_deltad(nr,nc) = -1;
         end
     end
 end
+clear nr nc
 
-W2 = [W2_deltab1 W2_ub1 W2_zb1 W2_deltab2 W2_ub2 W2_zb2 W2_deltad W2_ud W2_zdd];
-
-
-
-%%
+W2.W2 = [W2.W2_deltab1 W2.W2_ub1 W2.W2_zb1 W2.W2_deltab2 W2.W2_ub2 W2.W2_zb2 W2.W2_deltad W2.W2_ud W2.W2_zdd];
 W3 = [zeros(1,dim.Np-1) -dim.We zeros(1,dim.Np-1) -dim.We zeros(1,dim.Np-1) -dim.We];
 W4 = [dim.We dim.We dim.Wfuel];
 
@@ -236,9 +250,35 @@ Ce = zeros(1,dim.Np);
 for k = 1:dim.Np
     Ce(k) = 50 + 50*sin(pi*dim.Ts*k / 12);
 end
+clear k
 
 W5 = [zeros(1,dim.Np) -Ce(1,1:dim.Np) zeros(1,dim.Np) zeros(1,dim.Np) -Ce(1,1:dim.Np) zeros(1,dim.Np) zeros(1,4*dim.Np) -Ce(1,1:dim.Np) zeros(1,4*dim.Np)];
 
 %% S matrices
 S1 = W3*M1.M1+W5;
 S2 = W3*M2.M2+W4;
+
+%% Optimizing
+
+
+
+
+
+
+
+%% Joost
+model.obj = -sum(M);
+model.A = sparse(F_1);
+model.rhs = F_2 + F_3 * x(1);
+model.sense = repmat('<',size(F_1,1),1);
+model.vtype = [repmat('B',5*dim.Np,1); repmat('C', 5*dim.Np,1)];%['B'; 'C'; 'C'];
+model.modelsense = 'min';
+
+gurobi_write(model, 'mip1.lp');
+
+params.outputflag = 0;
+
+result = gurobi(model, params);
+
+disp(result);
+
