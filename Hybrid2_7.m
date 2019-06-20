@@ -17,7 +17,10 @@ parD.x_up  = 120;
 parD.u_up  = 15;
 parD.Rf    = 0.4;
 
-% load parD.mat % Load calculated a_i b_i diesel generator PWA approximation from exercise 2_3
+%%
+load parD.mat 
+
+%% Load calculated a_i b_i diesel generator PWA approximation from exercise 2_3
 parD.a1    = 136/75;
 parD.a2    = -22732801477233947 / 247390116249600;
 parD.a3    = 3591809146630509439 / 32061759065948160;
@@ -31,9 +34,10 @@ parD.u2    = 6.5;
 parD.u3    = 11;
 parD.u4    = 15;
 
+%%
 dim.Ts     = 0.20;  % in [h]
 dim.t      = 10;
-dim.Np     = 3;     % prediction horizon
+dim.Np     = 4;     % prediction horizon
 dim.Nc     = 2;     % control horizon
 dim.Wb1    = 3;     % weight in cost function battery 1
 dim.Wb2    = 4;     % weight in cost function battery 2
@@ -44,9 +48,9 @@ dim.We     = 0.4;   % weight in cost function e?
 %% Defining battery with matrices
 % Defining MLD matrices battery 1
 MLDB1.A  = 1;
-MLDB1.B1 = -dim.Ts*parB.eta_c(2);
+MLDB1.B1 = -dim.Ts*parB.eta_d(1);
 MLDB1.B2 = 0;
-MLDB1.B3 = dim.Ts*(parB.eta_d(2)-parB.eta_c(2));
+MLDB1.B3 = dim.Ts*(parB.eta_d(1)-parB.eta_c(1));
 MLDB1.B4 = 0;
 
 MLDB1.E1 = [0; 0; -1; 1; 0; 0; 0; 0]; % E1 matrix battery 1
@@ -70,9 +74,9 @@ MLDB2.g5 = [parB.u_up(2); -eps; 0; parB.x_up(2); 0; 0; -parB.u_low(2); parB.u_up
 
 %% Defining diesel generator with matrices
 MLDD.A = 1;
-MLDD.B1 = zeros(1,1);
+MLDD.B1 = dim.Ts*zeros(1,1);
 MLDD.B2 = [-parD.a1 -parD.a2 -parD.a3 -parD.a4];
-MLDD.B3 = [-parD.b1 -parD.b2 -parD.b3 -parD.b4];
+MLDD.B3 = dim.Ts*[-parD.b1 -parD.b2 -parD.b3 -parD.b4];
 MLDD.B4 = parD.Rf;
 
 % Constraint matrices diesel generator
@@ -84,7 +88,7 @@ MLDD.E3 = [1 0 0 -parD.u1 0 0 parD.u1 -eps 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
            1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -parD.u4 parD.u3 -parD.u3 parD.u4 parD.u3-eps]';
 MLDD.E3v2 = [1 1 1 1; 0 0 0 0; -parD.u1 0 0 0; 0 0 0 0; 0 0 0 0; parD.u1 0 0 0; -eps 0 0 0; 0 -parD.u2 0 0; 0 parD.u1 0 0; 0 -parD.u1 0 0; 0 parD.u2 0 0; 0 parD.u2-eps 0 0;
            0 0 -parD.u3 0; 0 0 parD.u2 0; 0 0 -parD.u2 0; 0 0 parD.u3 0; 0 0 parD.u2-eps 0; 0 0 0 -parD.u4; 0 0 0 parD.u3; 0 0 0 -parD.u3; 0 0 0 parD.u4; 0 0 0 parD.u3-eps];
-MLDD.E4 = [0 0 0 1 1 1 -1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
+MLDD.E4 = [0 0 0 1 -1 1 -1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
            0 0 0 0 0 0 0 0 1 -1 1 -1 0 0 0 0 0 0 0 0 0 0 0;
            0 0 0 0 0 0 0 0 0 0 0 0 0 1 -1 1 -1 0 0 0 0 0 0
            0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 -1 1 -1 0]';

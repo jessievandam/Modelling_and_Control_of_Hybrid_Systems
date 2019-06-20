@@ -42,7 +42,9 @@ for np = 1:dim.Np
 end
 clear np
 
-M2.M2 = [M2.M2_b1; M2.M2_b2; M2.M2_d];
+M2.M2 = [M2.M2_b1 zeros(size(M2.M2_b1,1),size(M2.M2_b2,2)) zeros(size(M2.M2_b1,1),size(M2.M2_d,2)); ...
+         zeros(size(M2.M2_b2,1),size(M2.M2_b1,2)) M2.M2_b2 zeros(size(M2.M2_b2,1),size(M2.M2_d,2)); ...
+         zeros(size(M2.M2_d,1),size(M2.M2_b1,2)) zeros(size(M2.M2_d,1),size(M2.M2_b2,2)) M2.M2_d];
 
 % M1.M1 matrix for the diesel generator
 M1.M1_d_delta = zeros(dim.Np*size(MLDD.A,1),dim.Np*size(MLDD.B2,2));
@@ -162,7 +164,7 @@ for np1 = 1:dim.Np % over columns
         F1.F1_b2_zd(1+(np2-1)*size(MLDB2.E4,1):np2*size(MLDB2.E4,1),1+(np1-1)*size(MLDB2.E4,2):np1*size(MLDB2.E4,2)) = MLDB2.E1*MLDB2.A^(np2-2)*MLDB2.B3;
         
         % For the diesel generator
-        F1.F1_d_u(1+(np2-1)*size(MLDD.E3,1):np2*size(MLDD.E3,1),1+(np1-1)*size(MLDD.E3,2):np1*size(MLDD.E3,2)) = MLDD.E1*MLDD.A^(np2-2)*MLDD.B2;
+        F1.F1_d_delta(1+(np2-1)*size(MLDD.E3,1):np2*size(MLDD.E3,1),1+(np1-1)*size(MLDD.E3,2):np1*size(MLDD.E3,2)) = MLDD.E1*MLDD.A^(np2-2)*MLDD.B2;
         F1.F1_d_zd(1+(np2-1)*size(MLDD.E4,1):np2*size(MLDD.E4,1),1+(np1-1)*size(MLDD.E4,2):np1*size(MLDD.E4,2)) = MLDD.E1*MLDD.A^(np2-2)*MLDD.B3;
         end
     end
@@ -226,19 +228,20 @@ W1.W1d = dim.Wd*ones(1,dim.Np);
 W1.W1 = [ W1.W1b1 W1.W1b2 W1.W1d ];
 
 %% W2.W2 matrix
-W2.W2_deltab1 = zeros(6*dim.Np,dim.Np);
-W2.W2_ub1 = zeros(6*dim.Np,dim.Np);
-W2.W2_zb1 = zeros(6*dim.Np,dim.Np);
+W2.W2_deltab1 = zeros(3*dim.Np,dim.Np);
+W2.W2_ub1 = zeros(3*dim.Np,dim.Np);
+W2.W2_zb1 = zeros(3*dim.Np,dim.Np);
 
-W2.W2_deltab2 = zeros(6*dim.Np,dim.Np);
-W2.W2_ub2 = zeros(6*dim.Np,dim.Np);
-W2.W2_zb2 = zeros(6*dim.Np,dim.Np);
+W2.W2_deltab2 = zeros(3*dim.Np,dim.Np);
+W2.W2_ub2 = zeros(3*dim.Np,dim.Np);
+W2.W2_zb2 = zeros(3*dim.Np,dim.Np);
 
-W2.W2_deltad = zeros(6*dim.Np,4*dim.Np);
-W2.W2_ud = zeros(6*dim.Np,dim.Np);
-W2.W2_zdd = zeros(6*dim.Np,4*dim.Np);
+W2.W2_deltad = zeros(3*dim.Np,4*dim.Np);
+W2.W2_ud = zeros(3*dim.Np,dim.Np);
+W2.W2_zdd = zeros(3*dim.Np,4*dim.Np);
 
-for nr = 1:6*dim.Np %rows
+%%
+for nr = 1:3*dim.Np %rows
     for nc = 1:dim.Np %columns
         if nr == nc
             W2.W2_deltab1(nr,nc) = 1;
@@ -254,23 +257,27 @@ for nr = 1:6*dim.Np %rows
                 
     end
     
-    for nc = 1:4*dim.Np
-        if nr == nc + 2*dim.Np
-            W2.W2_deltad(nr,nc) = 1;
-        elseif nr == nc + 3*dim.Np + 1
-            W2.W2_deltad(nr,nc) = -1;
+    for i = 1:dim.Np
+        if nr == i + 2*dim.Np
+            W2.W2_deltad(nr,(4*(i-1)+1):(4*i)) = 1;
         end
+        
+        if nr == i + 2*dim.Np + 1
+            W2.W2_deltad(nr,(4*(i-1)+1):(4*i)) = -1;
+        end
+        
     end
 end
 clear nr nc
 
+%%
 W2.W2 = [W2.W2_deltab1 W2.W2_ub1 W2.W2_zb1 W2.W2_deltab2 W2.W2_ub2 W2.W2_zb2 W2.W2_deltad W2.W2_ud W2.W2_zdd];
 
-% W3 matrices
-W3.W3b1 = ;
-W3.W3b2 = ;
-W3.W3d  =; 
-W3 = [zeros(1,dim.Np-1) -dim.We zeros(1,dim.Np-1) -dim.We zeros(1,dim.Np-1) -dim.We];
+%% W3 matrices
+% W3.W3b1 = ;
+% W3.W3b2 = ;
+% W3.W3d  =; 
+W3 = [zeros(1,dim.Np-1) -dim.We zeros(1,dim.Np-1) -dim.We zeros(1,dim.Np-1) -dim.Wfuel];
 W4 = [dim.We dim.We dim.Wfuel];
 
 % W5 matrix
@@ -294,20 +301,24 @@ S2 = W3*M2.M2+W4;
 %       -H - W2 V <= 0
 %       -H + W2 V <= 0
 
-names = {'H'; 'V'; 'X'};
+% names = {'H'; 'V'; 'X'};
 
 % Cost function to minimize
 model.obj = [W1.W1 S1 S2];
 model.modelsense = 'min';
-model.varnames = names;
-%model.vtype = 'C';             % B = binary, C = continuous
+% model.varnames = names;
+model.vtype = [repmat('C',3*dim.Np,1); ...
+               repmat('B',dim.Np,1); repmat('C',dim.Np,1); repmat('S',dim.Np,1); repmat('B',dim.Np,1); repmat('C',dim.Np,1); repmat('S',dim.Np,1); repmat('B',4*dim.Np,1); repmat('C',dim.Np,1); repmat('S',4*dim.Np,1); ...
+               repmat('C',3,1)];
 
 % Constraints
-model.A = sparse([0 F1.F1 -F3.F3; -1 -W2.W2 0; -1 W2.W2 0]);
-model.rhs = [F2.F2; 0; 0];
+model.A = sparse([zeros(size(F1.F1,1),size(W1.W1,2)) F1.F1 -F3.F3; ...
+                  -eye(size(W2.W2,1)) -W2.W2 zeros(size(W2.W2,1),3); ...
+                  -eye(size(W2.W2,1)) W2.W2 zeros(size(W2.W2,1),3)]);
+model.rhs = [F2.F2; zeros(size(W2.W2,1),1); zeros(size(W2.W2,1),1)];
 model.sense = repmat('<',size(F2.F2,1)+2*size(W2.W2,1),1);
 
-% Gurobi Solve
+%% Gurobi Solve
 gurobi_write(model, 'mip1.lp');
 params.outputflag = 0;
 result = gurobi(model, params);
