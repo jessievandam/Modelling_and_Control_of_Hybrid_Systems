@@ -3,6 +3,7 @@
 % Jessie van Dam (4395832) and Miranda van Duijn (4355776)
 clear all; close all; clc;
 addpath(genpath('C:\Documenten\TU Delft\MSc Systems and Control\Q4\Modelling and Control of Hybrid Systems\Project\Modelling_and_Control_of_Hybrid_Systems'));
+addpath c:\gurobi811\win64\matlab\
 
 %% Loading previously defined data
 load dim.mat; load MLDB1.mat; load MLDB2.mat; load MLDD.mat; load parB.mat; load parD.mat;
@@ -200,7 +201,10 @@ F3.F3 = [F3.F3_b1 zeros(size(F3.F3_b1,1),size(F3.F3_b2,2)) zeros(size(F3.F3_b1,1
       zeros(size(F3.F3_d,1),size(F3.F3_b1,2)) zeros(size(F3.F3_d,1),size(F3.F3_b2,2)) F3.F3_d];
 
 %% Constructing W matrices for optimization
-W1 = [ dim.Wb1*ones(1,dim.Np) dim.Wb2*ones(1,dim.Np) dim.Wd*ones(1,dim.Np)];
+W1.W1b1 = dim.Wb1*ones(1,dim.Np);
+W1.W1b2 = dim.Wb2*ones(1,dim.Np);
+W1.W1d = dim.Wd*ones(1,dim.Np);
+W1.W1 = [ W1.W1b1 W1.W1b2 W1.W1d ];
 
 %% W2.W2 matrix
 W2.W2_deltab1 = zeros(6*dim.Np,dim.Np);
@@ -242,6 +246,11 @@ end
 clear nr nc
 
 W2.W2 = [W2.W2_deltab1 W2.W2_ub1 W2.W2_zb1 W2.W2_deltab2 W2.W2_ub2 W2.W2_zb2 W2.W2_deltad W2.W2_ud W2.W2_zdd];
+
+% W3 matrices
+W3.W3b1 = ;
+W3.W3b2 = ;
+W3.W3d  =; 
 W3 = [zeros(1,dim.Np-1) -dim.We zeros(1,dim.Np-1) -dim.We zeros(1,dim.Np-1) -dim.We];
 W4 = [dim.We dim.We dim.Wfuel];
 
