@@ -9,6 +9,25 @@ addpath c:\gurobi811\win64\matlab\
 load dim.mat; load MLDB1.mat; load MLDB2.mat; load MLDD.mat; load parB.mat; load parD.mat;
 
 %% Constructing M matrices for update equation MILP
+% M3.M3 matrix
+M3.M3_b1 = zeros(dim.Np*size(MLDD.B4,1),size(MLDD.B4,2));
+M3.M3_b2 = zeros(dim.Np*size(MLDD.B4,1),size(MLDD.B4,2));
+M3.M3_d  = zeros(dim.Np*size(MLDD.B4,1),size(MLDD.B4,2));
+
+for nd = 1:dim.Np
+    if nd == 1
+        M3.M3_d(1,1) = MLDD.B4;
+    end
+   
+    if nd > 1
+        M3.M3_d(1+(nd-1)*size(MLDD.B4,1):nd*size(MLDD.B4,1),1:size(MLDD.B4,2)) = M3.M3_d(nd-1,:) + MLDD.B4*(MLDD.A)^(nd-1);
+    end    
+end
+clear nd
+
+% Concatenating submatrices into complete M3.M3 matrix
+M3.M3 = [M3.M3_b1; M3.M3_b2; M3.M3_d];
+
 % M2.M2 matrix
 M2.M2_b1 = zeros(dim.Np,size(MLDB1.A,2));
 M2.M2_b2 = zeros(dim.Np,size(MLDB1.A,2));
@@ -268,26 +287,40 @@ S1 = W3*M1.M1+W5;
 S2 = W3*M2.M2+W4;
 
 %% Optimizing
+% Minimize
+%       W1 H + S1 V + S2 x
+% Subject to
+%       F1 V - F3 x <= F2 
+%       -H - W2 V <= 0
+%       -H + W2 V <= 0
 
+names = {'H'; 'V'; 'X'};
 
-
-
-
-
-
-%% Joost
-model.obj = -sum(M);
-model.A = sparse(F_1);
-model.rhs = F_2 + F_3 * x(1);
-model.sense = repmat('<',size(F_1,1),1);
-model.vtype = [repmat('B',5*dim.Np,1); repmat('C', 5*dim.Np,1)];%['B'; 'C'; 'C'];
+% Cost function to minimize
+model.obj = [W1.W1 S1 S2];
 model.modelsense = 'min';
+model.varnames = names;
+%model.vtype = 'C';             % B = binary, C = continuous
 
+% Constraints
+model.A = sparse([0 F1.F1 -F3.F3; -1 -W2.W2 0; -1 W2.W2 0]);
+model.rhs = [F2.F2; 0; 0];
+model.sense = repmat('<',size(F2.F2,1)+2*size(W2.W2,1),1);
+
+% Gurobi Solve
 gurobi_write(model, 'mip1.lp');
-
 params.outputflag = 0;
-
 result = gurobi(model, params);
-
 disp(result);
+
+% Gurobi Solve 2
+% for v=1:length(names)
+%     fprintf('%s %d\n', names{v}, result.x(v));
+% end
+% fprintf('Obj: %e\n', result.objval);
+% end
+% result = gurobi(model, params);
+% disp(result);
+
+
 
