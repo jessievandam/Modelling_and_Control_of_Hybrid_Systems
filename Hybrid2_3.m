@@ -16,8 +16,8 @@ pdiff1b = diff(g1,b1);
 
 sol1 = solve(pdiff1a,pdiff1b);
 
-sola1 = single(sol1.a1);
-solb1 = single(sol1.b1);
+parD.a1 = double(sol1.a1);
+parD.b1 = double(sol1.b1);
 
 % Region 2
 syms a2 b2 ud2
@@ -30,8 +30,8 @@ pdiff2b = diff(g2,b2);
 
 sol2 = solve(pdiff2a,pdiff2b);
 
-sola2 = single(sol2.a2);
-solb2 = single(sol2.b2);
+parD.a2 = double(sol2.a2);
+parD.b2 = double(sol2.b2);
 
 % Region 3
 syms a3 b3 ud3
@@ -48,8 +48,8 @@ pdiff3b = diff(g3,b3);
 
 sol3 = solve(pdiff3a,pdiff3b);
 
-sola3 = single(sol3.a3);
-solb3 = single(sol3.b3);
+parD.a3 = double(sol3.a3);
+parD.b3 = double(sol3.b3);
 
 % Region 4
 syms a4 b4 ud4
@@ -62,8 +62,10 @@ pdiff4b = diff(g4,b4);
 
 sol4 = solve(pdiff4a,pdiff4b);
 
-sola4 = single(sol4.a4);
-solb4 = single(sol4.b4);
+parD.a4 = double(sol4.a4);
+parD.b4 = double(sol4.b4);
+
+save('parD.mat','parD');
 
 %% Plot real function together with approximation
 % real function
@@ -86,13 +88,13 @@ end
 % approximate function
 for i = 1:301;
     if i < 101
-    funapprox(i) = sola1+solb1*ud(i); 
+    funapprox(i) = parD.a1+parD.b1*ud(i); 
     elseif i < 131
-    funapprox(i) = sola2+solb2*ud(i);     
+    funapprox(i) = parD.a2+parD.b2*ud(i);     
     elseif i < 221
-    funapprox(i) = sola3+solb3*ud(i);     
+    funapprox(i) = parD.a3+parD.b3*ud(i);     
     elseif i > 220
-    funapprox(i) = sola4+solb4*ud(i); 
+    funapprox(i) = parD.a4+parD.b4*ud(i); 
     end
 end
 
