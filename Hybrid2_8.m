@@ -291,7 +291,7 @@ names = {'H'; 'V'; 'X'};
 model.obj = [W1.W1 S1 S2];
 model.modelsense = 'min';
 model.varnames = names;
-model.vtype = 'C';             % B = binary, C = continuous
+%model.vtype = 'C';             % B = binary, C = continuous
 
 % Constraints
 model.A = sparse([0 F1.F1 -F3.F3; -1 -W2.W2 0; -1 W2.W2 0]);
