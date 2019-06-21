@@ -307,6 +307,12 @@ S2.S2b2 = W3.W3b2*M2.M2_b2*W4.W4b2;
 S2.S2d  = W3.W3d*M2.M2_d*W4.W4d;
 S2.S2   = W3.W3*M2.M2+W4.W4;
 
+%% Saving matrices
+save('M1.mat','M1'); save('M2.mat','M2'); save('M3.mat','M3');
+save('F1.mat','F1'); save('F2.mat','F2'); save('F3.mat','F3');
+save('W1.mat','W1'); save('W2.mat','W2'); save('W3.mat','W3'); save('W4.mat','W4'); save('W5.mat','W5');
+save('S1.mat','S1'); save('S2.mat','S2');
+
 %% Optimizing entire system
 % Minimize
 %       W1 H + S1 V + S2 x
