@@ -69,31 +69,32 @@ save('parD.mat','parD');
 
 %% Plot real function together with approximation
 % real function
-ud = 0:0.05:15;
+step = 0.01;
+ud = 0:step:15;
 
-for i = 1:301;
-    if i < 41
+for i = 1:length(ud);
+    if i < round(2/step)
     funreal(i) = ud(i)^2+4;
-    elseif i < 101
+    elseif i < round(5/step)
     funreal(i) = 4*ud(i);
-    elseif i < 141
+    elseif i < round(7/step)
     funreal(i) = -9.44*ud(i)^3+166.06*ud(i)^2-948.22*ud(i)+1790.28;
-    elseif i < 181
+    elseif i <= round(9/step)
     funreal(i) = -11.78*ud(i) + 132.44;
-    elseif i > 180
+    elseif i > round(9/step)
     funreal(i) = 4.01*(ud(i)-10.47)^2+17.79;
     end
 end
 
 % approximate function
-for i = 1:301;
-    if i < 101
+for i = 1:length(ud);
+    if i < round(5/step)
     funapprox(i) = parD.a1+parD.b1*ud(i); 
-    elseif i < 131
+    elseif i < round(6.5/step)
     funapprox(i) = parD.a2+parD.b2*ud(i);     
-    elseif i < 221
+    elseif i <= round(11/step)
     funapprox(i) = parD.a3+parD.b3*ud(i);     
-    elseif i > 220
+    elseif i > round(11/step)
     funapprox(i) = parD.a4+parD.b4*ud(i); 
     end
 end
@@ -102,7 +103,8 @@ figure;
 hold on; grid on;
 plot(ud,funreal);
 plot(ud,funapprox);
-xlabel('generated power ud [kW]');
+xlabel('generated power u_d [kW]');
 ylabel('consumed fuel of diesel generator [kg/h]');
 legend('real fuel consumption', 'approximated fuel consumption');
 
+rmse = rms(funreal-funapprox);

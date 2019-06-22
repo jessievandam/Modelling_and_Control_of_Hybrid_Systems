@@ -1,6 +1,6 @@
 function [fun_int] = PWAapprox(x)
 
-% Input vector
+% input vector
 % a1 = x(1);
 % a2 = x(2);
 % a3 = x(3);
