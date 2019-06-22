@@ -394,7 +394,7 @@ xd(1) = 50;
 % Minimize
 %       W1b1 H + S1b1 V + S2b1 x
 % Subject to
-%       F1b1 V <= F2b1 + F3d*xd(k)
+%       F1b1 V - F3b1 x <= F2b1 
 %       -H - W2b1 V <= 0
 %       -H + W2b1 V <= 0
 
@@ -411,7 +411,7 @@ modeld.vtype = [repmat('C',dim.Np,1); ...
 modeld.A = sparse([zeros(size(F1.F1d,1),size(W1.W1d,2)) F1.F1d; ...
                     -eye(size(W2.W2d,1)) -W2.W2d; ...
                     -eye(size(W2.W2d,1)) W2.W2d]);
-modeld.rhs = [F2.F2d+F3.F3d*xd(k); zeros(size(W2.W2d,1),1); zeros(size(W2.W2d,1),1)];
+modeld.rhs = [F2.F2d+F3.F3d*xd(1); zeros(size(W2.W2d,1),1); zeros(size(W2.W2d,1),1)];
 modeld.sense = repmat('<',size(F2.F2d,1)+2*size(W2.W2d,1),1);
 
 % Gurobi Solve
