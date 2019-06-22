@@ -32,7 +32,6 @@ parD.b4    = 11422592324890509 / 562949953421312;
 parD.u1    = 5;
 parD.u2    = 6.5;
 parD.u3    = 11;
-parD.u4    = 15;
 
 %%
 dim.Ts     = 0.20;  % in [h]
@@ -45,7 +44,7 @@ dim.Wd     = 10;    % weight in cost function diesel generator
 dim.Wfuel  = 4;     % weight in cost function fuel
 dim.We     = 0.4;   % weight in cost function e?
 
-save 
+save('dim.mat','dim')
 
 %% Defining battery with matrices
 % Defining MLD matrices battery 1
@@ -61,6 +60,8 @@ MLDB1.E3 = [parB.u_up(1); parB.u_low(1)-eps; 0; 0; -parB.u_up(1); parB.u_low(1);
 MLDB1.E4 = [0; 0; 0; 0; 1; -1; 1; -1]; % E4 matrix battery 1
 MLDB1.g5 = [parB.u_up(1); -eps; 0; parB.x_up(1); 0; 0; -parB.u_low(1); parB.u_up(1)]; % g5 matrix battery 1
 
+save('MLDB1.mat','MLDB1')
+
 % Defining MLD matrices battery 2
 MLDB2.A = 1;
 MLDB2.B1 = -dim.Ts*parB.eta_c(1);
@@ -74,6 +75,8 @@ MLDB2.E3 = [parB.u_up(2); parB.u_low(2)-eps; 0; 0; -parB.u_up(2); parB.u_low(2);
 MLDB2.E4 = [0; 0; 0; 0; 1; -1; 1; -1]; % E4 matrix battery 2
 MLDB2.g5 = [parB.u_up(2); -eps; 0; parB.x_up(2); 0; 0; -parB.u_low(2); parB.u_up(2)]; % g5 matrix battery 2
 
+save('MLDB2.mat','MLDB2')
+
 %% Defining diesel generator with matrices
 MLDD.A = 1;
 MLDD.B1 = zeros(1,1);
@@ -82,17 +85,19 @@ MLDD.B3 = dim.Ts*[-parD.b1 -parD.b2 -parD.b3 -parD.b4];
 MLDD.B4 = dim.Ts*parD.Rf;
 
 % Constraint matrices diesel generator
-MLDD.E1 = [0 -1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]';
-MLDD.E2 = [0 0 0 0 0 -1 1 -1 0 0 -1 1 -1 0 0 -1 1 -1 0 0 -1 1 -1]';
-MLDD.E3 = [1 0 0 -parD.u1 0 0 parD.u1 -eps 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
-           1 0 0 0 0 0 0 0 -parD.u2 parD.u1 -parD.u1 parD.u2 parD.u2-eps 0 0 0 0 0 0 0 0 0 0;
-           1 0 0 0 0 0 0 0 0 0 0 0 0 -parD.u3 parD.u2 -parD.u2 parD.u3 parD.u2-eps 0 0 0 0 0;
-           1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -parD.u4 parD.u3 -parD.u3 parD.u4 parD.u3-eps]';
-MLDD.E3v2 = [1 1 1 1; 0 0 0 0; -parD.u1 0 0 0; 0 0 0 0; 0 0 0 0; parD.u1 0 0 0; -eps 0 0 0; 0 -parD.u2 0 0; 0 parD.u1 0 0; 0 -parD.u1 0 0; 0 parD.u2 0 0; 0 parD.u2-eps 0 0;
-           0 0 -parD.u3 0; 0 0 parD.u2 0; 0 0 -parD.u2 0; 0 0 parD.u3 0; 0 0 parD.u2-eps 0; 0 0 0 -parD.u4; 0 0 0 parD.u3; 0 0 0 -parD.u3; 0 0 0 parD.u4; 0 0 0 parD.u3-eps];
-MLDD.E4 = [0 0 0 1 -1 1 -1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
-           0 0 0 0 0 0 0 0 1 -1 1 -1 0 0 0 0 0 0 0 0 0 0 0;
-           0 0 0 0 0 0 0 0 0 0 0 0 0 1 -1 1 -1 0 0 0 0 0 0
-           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 -1 1 -1 0]';
-MLDD.g5 = [1; parD.x_low; parD.x_up; 0; 0; 0; parD.u1; -eps; 0; 0; -parD.u1; parD.u2; -eps; 0; 0; -parD.u2; parD.u3; -eps; 0; 0; -parD.u3; parD.u4; -eps];
+MLDD.E1 = [0 -1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]';
+MLDD.E2 = [0  0 0 0 0 -1 1 -1 1 0 0 -1 1 -1 1 0 0 -1 1 -1 1 0 0 -1 1 -1 1]';
+MLDD.E3 = [1 0 0 -parD.u1 0 0 parD.u1 eps -(parD.u1-eps)+parD.u_up 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
+           1 0 0 0 0 0 0 0 -parD.u2 parD.u1 -parD.u1 parD.u2 parD.u1 -(parD.u2-eps)+parD.u_up 0 0 0 0 0 0 0 0 0 0 0 0;
+           1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -parD.u3 parD.u2 -parD.u2 parD.u3 parD.u2 -(parD.u3-eps)+parD.u_up 0 0 0 0 0 0;
+           1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -parD.u_p parD.u3 -parD.u3 parD.u_up parD.u3 -parD.u_up]';
+MLDD.E4 = [0 0 0 1 -1 1 -1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
+           0 0 0 0 0 0 0 0 0 1 -1 1 -1 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 -1 1 -1 0 0 0 0 0 0 0 0;
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 -1 1 -1 0 0]';
+MLDD.g5 = [1; parD.x_low; parD.x_up; 0; 0; 0; parD.u1; 0; parD.u_up; 0; 0; -parD.u1; parD.u2; 0; parD.u_up; 0; ; -parD.u2; parD.u3; 0; parD.u_up; 0; 0; -parD.u3];
+
+save('MLDD.mat','MLDD')
+
+
 

@@ -41,7 +41,7 @@ for v=1:length(names)
 end
 
 fprintf('Obj: %e\n', result.objval);
-end
+% end
 result = gurobi(model, params);
 
 disp(result);

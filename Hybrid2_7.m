@@ -32,7 +32,6 @@ parD.b4    = 11422592324890509 / 562949953421312;
 parD.u1    = 5;
 parD.u2    = 6.5;
 parD.u3    = 11;
-parD.u4    = 15;
 
 %%
 dim.Ts     = 0.20;  % in [h]
@@ -86,17 +85,17 @@ MLDD.B3 = dim.Ts*[-parD.b1 -parD.b2 -parD.b3 -parD.b4];
 MLDD.B4 = dim.Ts*parD.Rf;
 
 % Constraint matrices diesel generator
-MLDD.E1 = [0 -1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]';
-MLDD.E2 = [0  0 0 0 0 -1 1 -1 0 0 -1 1 -1 0 0 -1 1 -1 0 0 -1 1 -1]';
-MLDD.E3 = [1 0 0 -parD.u1 0 0 parD.u1 -eps 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
-           1 0 0 0 0 0 0 0 -parD.u2 parD.u1 -parD.u1 parD.u2 parD.u2-eps 0 0 0 0 0 0 0 0 0 0;
-           1 0 0 0 0 0 0 0 0 0 0 0 0 -parD.u3 parD.u2 -parD.u2 parD.u3 parD.u2-eps 0 0 0 0 0;
-           1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -parD.u4 parD.u3 -parD.u3 parD.u4 parD.u3-eps]';
-MLDD.E4 = [0 0 0 1 -1 1 -1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
-           0 0 0 0 0 0 0 0 1 -1 1 -1 0 0 0 0 0 0 0 0 0 0 0;
-           0 0 0 0 0 0 0 0 0 0 0 0 0 1 -1 1 -1 0 0 0 0 0 0
-           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 -1 1 -1 0]';
-MLDD.g5 = [1; parD.x_low; parD.x_up; 0; 0; 0; parD.u1; -eps; 0; 0; -parD.u1; parD.u2; -eps; 0; 0; -parD.u2; parD.u3; -eps; 0; 0; -parD.u3; parD.u4; -eps];
+MLDD.E1 = [0 -1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]';
+MLDD.E2 = [0  0 0 0 0 -1 1 -1 1 0 0 -1 1 -1 1 0 0 -1 1 -1 1 0 0 -1 1 -1 1]';
+MLDD.E3 = [1 0 0 -parD.u1 0 0 parD.u1 eps -(parD.u1-eps)+parD.u_up 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
+           1 0 0 0 0 0 0 0 0 -parD.u2 parD.u1 -parD.u1 parD.u2 parD.u1 -(parD.u2-eps)+parD.u_up 0 0 0 0 0 0 0 0 0 0 0 0;
+           1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -parD.u3 parD.u2 -parD.u2 parD.u3 parD.u2 -(parD.u3-eps)+parD.u_up 0 0 0 0 0 0;
+           1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -parD.u_up parD.u3 -parD.u3 parD.u_up parD.u3 -parD.u_up]';
+MLDD.E4 = [gur0 0 0 1 -1 1 -1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
+           0 0 0 0 0 0 0 0 0 1 -1 1 -1 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 -1 1 -1 0 0 0 0 0 0 0 0;
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 -1 1 -1 0 0]';
+MLDD.g5 = [1; parD.x_low; parD.x_up; 0; 0; 0; parD.u1; 0; parD.u_up; 0; 0; -parD.u1; parD.u2; 0; parD.u_up; 0; 0; -parD.u2; parD.u3; 0; parD.u_up; 0; 0; -parD.u3; parD.u_up; 0; 0;];
 
 save('MLDD.mat','MLDD')
 

@@ -31,6 +31,42 @@ parD.x0 = 50;
 
 %% MPC loop for battery 1
 
-J(k) = W1.W1b1*modelb1.obj(1:dim.Np) + S1.S1b1*modelb1.obj(dim.Np+1:3*) + S2.S2b1*modelb1.obj() + + W3.W3b1*M3.M3b1;
+for  k = 1:10
+    
+    % Minimize
+    %       W1b1 H + S1b1 V + S2b1 x
+    % Subject to
+    %       F1b1 V - F3b1 x <= F2b1 
+    %       -H - W2b1 V <= 0
+    %       -H + W2b1 V <= 0
 
+    % names = {'H'; 'V'; 'X'};
+
+    % Cost function to minimize
+    modelb1.obj = [W1.W1b1 S1.S1b1];
+    modelb1.modelsense = 'min';
+    % model.varnames = names;
+    modelb1.vtype = [repmat('C',dim.Np,1); ...
+                     repmat('B',dim.Np,1); repmat('C',dim.Np,1); repmat('S',dim.Np,1);];
+
+    % Constraints
+    modelb1.A = sparse([zeros(size(F1.F1b1,1),size(W1.W1b1,2)) F1.F1b1; ...
+                        -eye(size(W2.W2b1,1)) -W2.W2b1; ...
+                        -eye(size(W2.W2b1,1)) W2.W2b1]);
+    modelb1.rhs = [F2.F2b1; zeros(size(W2.W2b1,1),1); zeros(size(W2.W2b1,1),1)];
+    modelb1.sense = repmat('<',size(F2.F2b1,1)+2*size(W2.W2b1,1),1);
+
+    % Gurobi Solve
+    gurobi_write(modelb1, 'mip1.lp');
+    params.outputflag = 0;
+    result = gurobi(modelb1, params);
+    disp(result);
+    
+    % Cost function at time step k
+    J(k) = W1.W1b1*modelb1.obj(1:dim.Np) + S1.S1b1*modelb1.obj(dim.Np+1:4*dim.Np) + S2.S2b1*modelb1.obj(4*dim.Np+1:end) + Ce(k)*Pload(k) + W3.W3b1*M3.M3b1;
+
+    % Update equation battery 1
+    
+    
+end
 
