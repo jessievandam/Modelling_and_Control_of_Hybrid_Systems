@@ -33,7 +33,7 @@ xd(1)  = parD.x0;
 
 %% MPC loop for battery 1
 
-for  k = 1:25
+for  k = 1:50
     
     Ce(k) = 50 + 50*sin(pi*dim.Ts*k / 12);
     
@@ -70,11 +70,52 @@ for  k = 1:25
     
     disp(modelb1.obj(2*dim.Np+1))
     
-    % Cost function at time step k
+    % Battery cost function at time step k
     J(k) = result.objval + S2.S2b1*xb1(k) + Ce(k)*Pload(k) + W3.W3b1*M3.M3_b1;
 
     % Update equation battery 1
     xb1(k+1) = MLDB1.A*xb1(k) + MLDB1.B1*result.x(2*dim.Np+1) + MLDB1.B3*result.x(3*dim.Np+1);
+    
+end
+
+%%
+for k = 1:25
+    % Minimize
+    %       W1 H + S1 V + S2 x
+    % Subject to
+    %       F1 V - F3 x <= F2 
+    %       -H - W2 V <= 0
+    %       -H + W2 V <= 0
+
+    % names = {'H'; 'V'; 'X'};
+
+    % Cost function to minimize
+    model.obj = [W1.W1 S1.S1];
+    model.modelsense = 'min';
+    % model.varnames = names;
+    model.vtype = [repmat('C',3*dim.Np,1); ...
+                   repmat('B',dim.Np,1); repmat('C',dim.Np,1); repmat('S',dim.Np,1); repmat('B',dim.Np,1); repmat('C',dim.Np,1); repmat('S',dim.Np,1); repmat('B',4*dim.Np,1); repmat('C',dim.Np,1); repmat('S',4*dim.Np,1)];
+
+    % Constraints
+    model.A = sparse([zeros(size(F1.F1,1),size(W1.W1,2)) F1.F1; ...
+                      -eye(size(W2.W2,1)) -W2.W2; ...
+                      -eye(size(W2.W2,1)) W2.W2 ]);
+    model.rhs = [F2.F2; zeros(size(W2.W2,1),1); zeros(size(W2.W2,1),1)];
+    model.sense = repmat('<',size(F2.F2,1)+2*size(W2.W2,1),1);
+
+    % Gurobi Solve
+    gurobi_write(model, 'mip1.lp');
+    params.outputflag = 0;
+    result = gurobi(model, params);
+    disp(result);
+    
+    % Cost function at time step k
+    J(k) = result.objval + S2.S2*x(k) + Ce(k)*Pload(k) + W3.W3*M3.M3;
+
+    % Update equation
+    xb1(k+1) = MLDB1.A*xb1(k) + MLDB1.B1*result.x(2*dim.Np+1) + MLDB1.B3*result.x(3*dim.Np+1);
+    xb2(k+1) = MLDB2.A*xb2(k) + MLDB2.B1*result.x(4*dim.Np+1) + MLDB2.B3*result.x(5*dim.Np+1);
+    xd(k+1)  = MLDD.A*xd(k) + MLDD.B2*result.x(10*dim.Np+1) + MLDD.B3*result.x(11*dim.Np+1); 
     
 end
 

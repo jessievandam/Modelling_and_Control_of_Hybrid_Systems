@@ -316,10 +316,17 @@ save('W1.mat','W1'); save('W2.mat','W2'); save('W3.mat','W3'); save('W4.mat','W4
 save('S1.mat','S1'); save('S2.mat','S2');
 
 %% Optimizing entire system
+xb1(1) = parB.x0;
+xb2(1) = parB.x0;
+xd(1)  = parD.x0;
+
+x(:,1) = [xb1(1); xb2(1); xd(1)];
+k = 1;
+
 % Minimize
 %       W1 H + S1 V + S2 x
 % Subject to
-%       F1 V - F3 x <= F2 
+%            F1 V <= F2 + F3*x(k)
 %       -H - W2 V <= 0
 %       -H + W2 V <= 0
 
@@ -336,7 +343,7 @@ model.vtype = [repmat('C',3*dim.Np,1); ...
 model.A = sparse([zeros(size(F1.F1,1),size(W1.W1,2)) F1.F1; ...
                   -eye(size(W2.W2,1)) -W2.W2; ...
                   -eye(size(W2.W2,1)) W2.W2 ]);
-model.rhs = [F2.F2; zeros(size(W2.W2,1),1); zeros(size(W2.W2,1),1)];
+model.rhs = [F2.F2+F3.F3*x(:,k); zeros(size(W2.W2,1),1); zeros(size(W2.W2,1),1)];
 model.sense = repmat('<',size(F2.F2,1)+2*size(W2.W2,1),1);
 
 % Gurobi Solve
@@ -358,12 +365,13 @@ disp(result);
 % Minimize
 %       W1b1 H + S1b1 V + S2b1 x
 % Subject to
-%       F1b1 V <= F2b1 + F3b1*xb1(k) 
+%            F1b1 V <= F2b1 + F3b1*xb1(k) 
 %       -H - W2b1 V <= 0
 %       -H + W2b1 V <= 0
 
 % names = {'H'; 'V'; 'X'};
 
+k = 1;
 xb1(1) = 10;
 
 % Cost function to minimize

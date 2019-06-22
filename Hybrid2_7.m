@@ -3,6 +3,7 @@
 % Jessie van Dam (4395832) and Miranda van Duijn (4355776)
 clear all; close all; clc;
 addpath C:\Users\Miranda\hysdel-2.0.6-MINGW32_NT-5.1-i686
+addpath(genpath('C:\Documenten\TU Delft\MSc Systems and Control\Q4\Modelling and Control of Hybrid Systems\Project\Modelling_and_Control_of_Hybrid_Systems'))
 
 % Define parameters
 parB.eta_c = [0.9 0.95];
@@ -44,7 +45,7 @@ dim.Wd     = 10;    % weight in cost function diesel generator
 dim.Wfuel  = 4;     % weight in cost function fuel
 dim.We     = 0.4;   % weight in cost function e?
 
-save('dim.mat','dim')
+save('C:\Documenten\TU Delft\MSc Systems and Control\Q4\Modelling and Control of Hybrid Systems\Project\Modelling_and_Control_of_Hybrid_Systems\Data','dim')
 
 %% Defining battery with matrices
 % Defining MLD matrices battery 1
@@ -91,7 +92,7 @@ MLDD.E3 = [1 0 0 -parD.u1 0 0 parD.u1 eps -(parD.u1-eps)+parD.u_up 0 0 0 0 0 0 0
            1 0 0 0 0 0 0 0 0 -parD.u2 parD.u1 -parD.u1 parD.u2 parD.u1 -(parD.u2-eps)+parD.u_up 0 0 0 0 0 0 0 0 0 0 0 0;
            1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -parD.u3 parD.u2 -parD.u2 parD.u3 parD.u2 -(parD.u3-eps)+parD.u_up 0 0 0 0 0 0;
            1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -parD.u_up parD.u3 -parD.u3 parD.u_up parD.u3 -parD.u_up]';
-MLDD.E4 = [gur0 0 0 1 -1 1 -1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
+MLDD.E4 = [0 0 0 1 -1 1 -1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
            0 0 0 0 0 0 0 0 0 1 -1 1 -1 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
            0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 -1 1 -1 0 0 0 0 0 0 0 0;
            0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 -1 1 -1 0 0]';
