@@ -427,5 +427,3 @@ gurobi_write(modeld, 'mip1.lp');
 params.outputflag = 0;
 result = gurobi(modeld, params);
 disp(result);
-
-
