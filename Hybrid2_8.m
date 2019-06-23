@@ -8,6 +8,17 @@ addpath c:\gurobi811\win64\matlab\
 %% Loading previously defined data
 load dim.mat; load MLDB1.mat; load MLDB2.mat; load MLDD.mat; load parB.mat; load parD.mat;
 
+%% Pload
+for k = 1:100
+    if k <= 20
+        Pload(k) = 0;
+    elseif k >= 21 && k <= 50
+        Pload(k) = 30+2*k;
+    elseif k >= 51
+        Pload(k) = 45;
+    end
+end
+
 %% Constructing M matrices for update equation MILP
 % M1.M1 matrix for the diesel generator
 M1.M1_d_delta = zeros(dim.Np*size(MLDD.A,1),dim.Np*size(MLDD.B2,2));
@@ -18,7 +29,7 @@ M1.M1_d_zd = zeros(dim.Np*size(MLDD.A,1),dim.Np*size(MLDD.B3,2));
 for np1 = 1:dim.Np % over columns
     for np2 = 1:dim.Np % over rows
     M1.M1_d_delta(1+(np2-1)*size(MLDD.A,1),1+(np1-1)*size(MLDD.B2,2):np1*size(MLDD.B2,2))  = MLDD.A^(np2-1)*MLDD.B2;
-    M1.M1_d_u(1+(np2-1)*size(MLDD.A,1),1+(np1-1):np1*size(MLDD.B1,2))      = MLDD.A^(np2-1)*MLDD.B1;
+    M1.M1_d_u(1+(np2-1)*size(MLDD.A,1),1+(np1-1):np1*size(MLDD.B1,2))                      = MLDD.A^(np2-1)*MLDD.B1;
     M1.M1_d_zd (1+(np2-1)*size(MLDD.A,1),1+(np1-1)*size(MLDD.B3,2):np1*size(MLDD.B3,2))    = MLDD.A^(np2-1)*MLDD.B3;
     end
 end
@@ -50,12 +61,12 @@ M1.M1_b2       = zeros(dim.Np,3*dim.Np);
 for np1 = 1:dim.Np % over columns
     for np2 = 1:dim.Np % over rows
     M1.M1_b1_delta(1+(np2-1)*size(MLDB1.A,1),1+(np1-1)*size(MLDB1.B2,2):np1*size(MLDB1.B2,2))  = MLDB1.A^(np2-1)*MLDB1.B2;
-    M1.M1_b1_u(1+(np2-1)*size(MLDB1.A,1),1+(np1-1)*size(MLDB1.B3,2):np1*size(MLDB1.B3,2))      = MLDB1.A^(np2-1)*MLDB1.B3;
-    M1.M1_b1_zd(1+(np2-1)*size(MLDB1.A,1),1+(np1-1)*size(MLDB1.B1,2):np1*size(MLDB1.B1,2))     = MLDB1.A^(np2-1)*MLDB1.B1;
+    M1.M1_b1_u(1+(np2-1)*size(MLDB1.A,1),1+(np1-1)*size(MLDB1.B3,2):np1*size(MLDB1.B3,2))      = MLDB1.A^(np2-1)*MLDB1.B1;
+    M1.M1_b1_zd(1+(np2-1)*size(MLDB1.A,1),1+(np1-1)*size(MLDB1.B1,2):np1*size(MLDB1.B1,2))     = MLDB1.A^(np2-1)*MLDB1.B3;
     
     M1.M1_b2_delta(1+(np2-1)*size(MLDB2.A,1),1+(np1-1)*size(MLDB2.B2,2):np1*size(MLDB2.B2,2))  = MLDB2.A^(np2-1)*MLDB2.B2;
-    M1.M1_b2_u(1+(np2-1)*size(MLDB2.A,1),1+(np1-1)*size(MLDB2.B3,2):np1*size(MLDB2.B3,2))      = MLDB2.A^(np2-1)*MLDB2.B3;
-    M1.M1_b2_zd(1+(np2-1)*size(MLDB2.A,1),1+(np1-1)*size(MLDB2.B1,2):np1*size(MLDB2.B1,2))     = MLDB2.A^(np2-1)*MLDB2.B1;
+    M1.M1_b2_u(1+(np2-1)*size(MLDB2.A,1),1+(np1-1)*size(MLDB2.B3,2):np1*size(MLDB2.B3,2))      = MLDB2.A^(np2-1)*MLDB2.B1;
+    M1.M1_b2_zd(1+(np2-1)*size(MLDB2.A,1),1+(np1-1)*size(MLDB2.B1,2):np1*size(MLDB2.B1,2))     = MLDB2.A^(np2-1)*MLDB2.B3;
     end
 end
 clear np1 np2
@@ -121,7 +132,6 @@ clear nd
 M3.M3 = [M3.M3_b1; M3.M3_b2; M3.M3_d];
       
 %% Constructing F1.F1 matrix for MILP constraint equation
-% NOTE: maybe put all submatrices in a struct
 F1.F1b1_delta = zeros(dim.Np*size(MLDB1.E3,1),dim.Np*size(MLDB1.E3,2));
 F1.F1b1_u = zeros(dim.Np*size(MLDB1.E2,1),dim.Np*size(MLDB1.E2,2));
 F1.F1b1_zd = zeros(dim.Np*size(MLDB1.E4,1),dim.Np*size(MLDB1.E4,2));
@@ -171,13 +181,30 @@ for np1 = 1:dim.Np % over columns
 end
 clear np1 np2
 
-% Concatenating all submatrices
+%% Concatenating all submatrices
 F1.F1b1 = [F1.F1b1_delta F1.F1b1_u F1.F1b1_zd];
 F1.F1b2 = [F1.F1b2_delta F1.F1b2_u F1.F1b2_zd];
 F1.F1d = [F1.F1d_delta F1.F1d_u F1.F1d_zd];
 F1.F1 = [F1.F1b1 zeros(size(F1.F1b1,1),size(F1.F1b2,2)) zeros(size(F1.F1b1,1),size(F1.F1d,2));
-      zeros(size(F1.F1b2,1),size(F1.F1b1,2)) F1.F1b2 zeros(size(F1.F1b2,1),size(F1.F1d,2))
-      zeros(size(F1.F1d,1),size(F1.F1b1,2)) zeros(size(F1.F1d,1),size(F1.F1b2,2)) F1.F1d];
+         zeros(size(F1.F1b2,1),size(F1.F1b1,2)) F1.F1b2 zeros(size(F1.F1b2,1),size(F1.F1d,2))
+         zeros(size(F1.F1d,1),size(F1.F1b1,2)) zeros(size(F1.F1d,1),size(F1.F1b2,2)) F1.F1d];
+     
+%% Constructing F1 matrices for Pimp
+F1.F11b1 = zeros(dim.Np,3*dim.Np);
+F1.F11d  = zeros(dim.Np,9*dim.Np);
+
+% F1 for the batteries
+diag = [0 1 0];
+F1.F11b1 = kron(eye(dim.Np),diag);
+F1.F11b2 = F1.F11b1;
+
+% F1 for the diesel generator
+diagd = [0 0 0 0 1 0 0 0 0];
+F1.F11d = kron(eye(dim.Np),diagd);
+
+F1.F1new = [F1.F1 zeros(size(F1.F1,1),dim.Np);
+            F1.F11b1 F1.F11b2 F1.F11d eye(dim.Np);
+            -F1.F11b1 -F1.F11b2 -F1.F11d -eye(dim.Np)];
 
 %% Constructing F2.F2 matrix for MILP constraint equation
 F2.F2b1   = zeros(dim.Np*size(MLDB1.g5,1),size(MLDB1.g5,2));
@@ -205,6 +232,11 @@ clear n
 F2.F2d = F2.F2d_1 - F2.F2d_2;
 F2.F2 = [F2.F2b1; F2.F2b2; F2.F2d];
 
+%% Constructing F2 for Pimp
+F2.F2new = [F2.F2;
+            Pload(1:dim.Np)';
+            -Pload(1:dim.Np)'];
+
 %% Constructing F3.F3 matrix for MILP constraint equation
 F3.F3b1 = zeros(dim.Np*size(MLDB1.E1,1),size(MLDB1.E1,2));
 F3.F3b2 = zeros(dim.Np*size(MLDB2.E1,1),size(MLDB2.E1,2));
@@ -213,13 +245,17 @@ F3.F3d  = zeros(dim.Np*size(MLDD.E1,1),size(MLDD.E1,2));
 for n = 1:dim.Np
     F3.F3b1(1+(n-1)*size(MLDB1.E1,1):n*size(MLDB1.E1,1),1:size(MLDB1.E1,2)) = -MLDB1.E1*MLDB1.A^(n-1);
     F3.F3b2(1+(n-1)*size(MLDB2.E1,1):n*size(MLDB2.E1,1),1:size(MLDB2.E1,2)) = -MLDB2.E1*MLDB2.A^(n-1);
-    F3.F3d(1+(n-1)*size(MLDD.E1,1):n*size(MLDD.E1,1),1:size(MLDD.E1,2)) = -MLDD.E1*MLDD.A^(n-1);
+    F3.F3d(1+(n-1)*size(MLDD.E1,1):n*size(MLDD.E1,1),1:size(MLDD.E1,2))     = -MLDD.E1*MLDD.A^(n-1);
 end
 clear n
 
 F3.F3 = [F3.F3b1 zeros(size(F3.F3b1,1),size(F3.F3b2,2)) zeros(size(F3.F3b1,1),size(F3.F3d,2));
       zeros(size(F3.F3b2,1),size(F3.F3b1,2)) F3.F3b2 zeros(size(F3.F3b2,1),size(F3.F3d,2))
       zeros(size(F3.F3d,1),size(F3.F3b1,2)) zeros(size(F3.F3d,1),size(F3.F3b2,2)) F3.F3d];
+  
+%%
+F3.F3new = [F3.F3;
+            zeros(2*dim.Np,3)];
 
 %% Constructing W matrices for optimization
 W1.W1b1 = [dim.Wb1*ones(1,dim.Np-1) 0];
@@ -270,7 +306,9 @@ W2.W2 = [W2.W2b1 zeros(size(W2.W2b1,1),size(W2.W2b2,2)) zeros(size(W2.W2b1,1),si
          zeros(size(W2.W2b2,1),size(W2.W2b1,2)) W2.W2b2 zeros(size(W2.W2b2,1),size(W2.W2d,2)); ...
          zeros(size(W2.W2d,1),size(W2.W2b1,2)) zeros(size(W2.W2d,1),size(W2.W2b2,2)) W2.W2d];
 
-% W3 matrices
+W2.W2new = [W2.W2 zeros(size(W2.W2,1),dim.Np)];
+     
+%% W3 matrices
 W3.W3b1 = [zeros(1,dim.Np-1) -dim.We];
 W3.W3b2 = [zeros(1,dim.Np-1) -dim.We];
 W3.W3d  = [zeros(1,dim.Np-1) -dim.Wfuel]; 
@@ -297,12 +335,18 @@ W5.W5d  = [zeros(1,4*dim.Np) -Ce(1,1:dim.Np-1) 0 zeros(1,4*dim.Np)];
 
 W5.W5 = [W5.W5b1 W5.W5b2 W5.W5d];
 
-%% S matrices
+%% S matrices OLD
 S1.S1b1 = W3.W3b1*M1.M1_b1+W5.W5b1;
 S1.S1b2 = W3.W3b2*M1.M1_b2+W5.W5b2;
 S1.S1d  = W3.W3d*M1.M1_d+W5.W5d;
 
 S1.S1 = W3.W3*M1.M1+W5.W5;
+
+S1.S1b1new = [W3.W3b1*M1.M1_b1 Ce(1:dim.Np-1) 0];
+S1.S1b2new = [W3.W3b2*M1.M1_b2 Ce(1:dim.Np-1) 0];
+S1.S1dnew  = [W3.W3d*M1.M1_d+W5.W5d Ce(1:dim.Np-1) 0];
+
+S1.S1new = [W3.W3*M1.M1+W5.W5 Ce(1:dim.Np-1) 0];
 
 S2.S2b1 = W3.W3b1*M2.M2_b1*W4.W4b1;
 S2.S2b2 = W3.W3b2*M2.M2_b2*W4.W4b2;
@@ -323,8 +367,8 @@ xd(1)  = parD.x0;
 x(:,1) = [xb1(1); xb2(1); xd(1)];
 k = 1;
 
-% Minimize
-%       W1 H + S1 V + S2 x
+% Minimize 
+%       W1 H + S1 V + S2 x 
 % Subject to
 %            F1 V <= F2 + F3*x(k)
 %       -H - W2 V <= 0
@@ -427,3 +471,78 @@ gurobi_write(modeld, 'mip1.lp');
 params.outputflag = 0;
 result = gurobi(modeld, params);
 disp(result);
+
+%% Optimizing the diesel generator without absolute values
+xd(1) = parD.x0;
+
+% Minimize
+%       S1d V
+% Subject to
+%       F1d V <= F2d + F3d*xd(k)
+
+% names = {'V'};
+
+% Cost function to minimize
+modeld1.obj = [S1.S1d];
+modeld1.modelsense = 'min';
+% model.varnames = names;
+modeld1.vtype = [repmat('B',4*dim.Np,1); repmat('C',dim.Np,1); repmat('S',4*dim.Np,1)];
+
+% Constraints
+modeld1.A = sparse([F1.F1d]);
+modeld1.rhs = [F2.F2d+F3.F3d*xd(k)];
+modeld1.sense = repmat('<',size(F2.F2d,1),1);
+
+% Gurobi Solve
+gurobi_write(modeld1, 'mip1.lp');
+params.outputflag = 0;
+result = gurobi(modeld1, params);
+disp(result);
+
+%% Optimizing entire system NEW
+xb1(1) = parB.x0;
+xb2(1) = parB.x0;
+xd(1)  = parD.x0;
+
+x(:,1) = [xb1(1); xb2(1); xd(1)];
+k = 1;
+
+% Minimize 
+%       W1 H + S1 V
+% Subject to
+%            F1 V <= F2 + F3*x(k)
+%       -H - W2 V <= 0
+%       -H + W2 V <= 0
+
+% names = {'H'; 'V'; 'X'};
+
+% Cost function to minimize
+model.obj = [W1.W1 S1.S1new];
+model.modelsense = 'min';
+% model.varnames = names;
+model.vtype = [repmat('C',3*dim.Np,1); ...
+               repmat('B',dim.Np,1); repmat('C',dim.Np,1); repmat('S',dim.Np,1); repmat('B',dim.Np,1); repmat('C',dim.Np,1); repmat('S',dim.Np,1); repmat('B',4*dim.Np,1); repmat('C',dim.Np,1); repmat('S',4*dim.Np,1); repmat('C',dim.Np,1)];
+
+% Constraints
+model.A = sparse([zeros(size(F1.F1new,1),size(W1.W1,2)) F1.F1new; ...
+                  -eye(size(W2.W2new,1)) -W2.W2new; ...
+                  -eye(size(W2.W2new,1)) W2.W2new ]);
+model.rhs = [F2.F2new+F3.F3new*x(:,k); zeros(size(W2.W2new,1),1); zeros(size(W2.W2new,1),1)];
+model.sense = repmat('<',size(F2.F2new,1)+2*size(W2.W2new,1),1);
+
+% Gurobi Solve
+gurobi_write(model, 'mip1.lp');
+params.outputflag = 0;
+result = gurobi(model, params);
+disp(result);
+
+% Gurobi Solve 2
+% for v=1:length(names)
+%     fprintf('%s %d\n', names{v}, result.x(v));
+% end
+% fprintf('Obj: %e\n', result.objval);
+% end
+% result = gurobi(model, params);
+% disp(result);
+
+

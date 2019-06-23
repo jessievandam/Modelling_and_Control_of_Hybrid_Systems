@@ -12,14 +12,19 @@ parB.x_up  = [48 64];
 parB.u_low = [-3 -4];
 parB.u_up  = [2 3];
 parB.A     = 1;
+parB.x0    = 10;
 
+save('parB.mat','parB')
+
+%%
+load parD.mat 
 parD.x_low = 10;
 parD.x_up  = 120;
 parD.u_up  = 15;
 parD.Rf    = 0.4;
+parD.x0    = 50;
 
-%%
-load parD.mat 
+save('parD.mat','parD')
 
 %% Load calculated a_i b_i diesel generator PWA approximation from exercise 2_3
 parD.a1    = 136/75;
@@ -45,7 +50,7 @@ dim.Wd     = 10;    % weight in cost function diesel generator
 dim.Wfuel  = 4;     % weight in cost function fuel
 dim.We     = 0.4;   % weight in cost function e?
 
-save('C:\Documenten\TU Delft\MSc Systems and Control\Q4\Modelling and Control of Hybrid Systems\Project\Modelling_and_Control_of_Hybrid_Systems\Data','dim')
+save('dim.mat','dim')
 
 %% Defining battery with matrices
 % Defining MLD matrices battery 1
@@ -96,7 +101,7 @@ MLDD.E4 = [0 0 0 1 -1 1 -1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
            0 0 0 0 0 0 0 0 0 1 -1 1 -1 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
            0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 -1 1 -1 0 0 0 0 0 0 0 0;
            0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 -1 1 -1 0 0]';
-MLDD.g5 = [1; parD.x_low; parD.x_up; 0; 0; 0; parD.u1; 0; parD.u_up; 0; 0; -parD.u1; parD.u2; 0; parD.u_up; 0; 0; -parD.u2; parD.u3; 0; parD.u_up; 0; 0; -parD.u3; parD.u_up; 0; 0;];
+MLDD.g5 = [1; -parD.x_low; parD.x_up; 0; 0; 0; parD.u1; 0; parD.u_up; 0; 0; -parD.u1; parD.u2; 0; parD.u_up; 0; 0; -parD.u2; parD.u3; 0; parD.u_up; 0; 0; -parD.u3; parD.u_up; 0; 0;];
 
 save('MLDD.mat','MLDD')
 
