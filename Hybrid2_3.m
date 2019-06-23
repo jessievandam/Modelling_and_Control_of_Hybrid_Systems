@@ -107,4 +107,5 @@ xlabel('generated power u_d [kW]');
 ylabel('consumed fuel of diesel generator [kg/h]');
 legend('real fuel consumption', 'approximated fuel consumption');
 
+% compute RMSE
 rmse = rms(funreal-funapprox);

@@ -1,17 +1,6 @@
 function [fun_int] = PWAapprox(x)
 
-% Input vector
-% a1 = x(1);
-% a2 = x(2);
-% a3 = x(3);
-% a4 = x(4);
-% b1 = x(5);
-% b2 = x(6);
-% b3 = x(7);
-% b4 = x(8);
-% u1 = x(9);
-% u2 = x(10);
-% u3 = x(11);
+% input vector x = [a1; a2; a3; a4; b1; b2; b3; b4; u1; u2; u3]
 
 % computing f and f_dak
 for k = 1:15000

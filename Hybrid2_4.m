@@ -4,6 +4,7 @@
 clear all; close all; clc;
 load('parD.mat');
 
+% creating constraints
 A = [0 0 0 0 0 0 0 0  0  0  1
      0 0 0 0 0 0 0 0  1 -1  0
      0 0 0 0 0 0 0 0  0  1 -1
@@ -11,6 +12,8 @@ A = [0 0 0 0 0 0 0 0  0  0  1
  
 b = [15; 0; 0; 0];
 
+% minimizing integral for several initial values
+% input vector x = [a1; a2; a3; a4; b1; b2; b3; b4; u1; u2; u3]
 x = zeros(20,11);
 x0 = zeros(1,11);
 for i = 1:21
@@ -62,4 +65,5 @@ xlabel('generated power u_d [kW]');
 ylabel('consumed fuel of diesel generator [kg/h]');
 legend('real fuel consumption', 'approximated fuel consumption');
 
+% compute RMSE
 rmse = rms(funreal-funapprox);
