@@ -10,8 +10,6 @@ load W1.mat; load W2.mat; load W3.mat; load W4.mat; load W5.mat; load S1.mat; lo
 load Ce.mat;
 
 %% Defining Pload (needed for the cost)
-% Place Pload in MPC loop.
-
 for k = 1:100
     if k <= 20
         Pload(k) = 0;
@@ -28,6 +26,7 @@ parD.x0 = 50;
 xb1(1) = parB.x0;
 xb2(1) = parB.x0;
 xd(1)  = parD.x0;
+
 
 %% MPC loop for battery 1
 

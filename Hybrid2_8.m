@@ -7,13 +7,10 @@ addpath c:\gurobi811\win64\matlab\
 
 %% Loading previously defined data
 load dim.mat; load MLDB1.mat; load MLDB2.mat; load parB.mat; load parD.mat;
-
-% load MLDD.mat;
-% load MLDDJoost.mat
-load MLDDJordan.mat
+load MLDD.mat
  
 %% Pload
-for k = 1:100
+for k = 1:dim.Tend
     if k <= 20
         Pload(k) = 0;
     elseif k >= 21 && k <= 50

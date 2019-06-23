@@ -75,50 +75,6 @@ MLDB2.g5 = [parB.u_up(2); -parB.u_low(2); parB.u_up(2); -eps; 0; parB.x_up(2); 0
 
 save('MLDB2.mat','MLDB2')
 
-%% Defining diesel generator with matrices
-MLDD.A = 1;
-MLDD.B1 = zeros(1,1);
-MLDD.B2 = dim.Ts*[-parD.a1 -parD.a2 -parD.a3 -parD.a4];
-MLDD.B3 = dim.Ts*[-parD.b1 -parD.b2 -parD.b3 -parD.b4];
-MLDD.B4 = dim.Ts*parD.Rf;
-
-% Constraint matrices diesel generator
-MLDD.E1 = [0 -1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]';
-MLDD.E2 = [0  0 0 0 0 -1 1 -1 1 0 0 -1 1 -1 1 0 0 -1 1 -1 1 0 0 -1 1 -1 1]';
-MLDD.E3 = [1 0 0 -parD.u1 0 0 parD.u1 eps -(parD.u1-eps)+parD.u_up 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
-           1 0 0 0 0 0 0 0 0 -parD.u2 parD.u1 -parD.u1 parD.u2 parD.u1 -(parD.u2-eps)+parD.u_up 0 0 0 0 0 0 0 0 0 0 0 0;
-           1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -parD.u3 parD.u2 -parD.u2 parD.u3 parD.u2 -(parD.u3-eps)+parD.u_up 0 0 0 0 0 0;
-           1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -parD.u_up parD.u3 -parD.u3 parD.u_up parD.u3 -parD.u_up]';
-MLDD.E4 = [0 0 0 1 -1 1 -1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
-           0 0 0 0 0 0 0 0 0 1 -1 1 -1 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
-           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 -1 1 -1 0 0 0 0 0 0 0 0;
-           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 -1 1 -1 0 0]';
-MLDD.g5 = [1; -parD.x_low; parD.x_up; 0; 0; 0; parD.u1; 0; parD.u_up; 0; 0; -parD.u1; parD.u2; 0; parD.u_up; 0; 0; -parD.u2; parD.u3; 0; parD.u_up; 0; 0; -parD.u3; parD.u_up; 0; 0;];
-
-save('MLDD.mat','MLDD')
-
-%% Defining MLD system diesel generator Joost
-MLDD.A = 1;
-MLDD.B1 = zeros(1,1);
-MLDD.B2 = dim.Ts*[-parD.a1 -parD.a2 -parD.a3 -parD.a4];
-MLDD.B3 = dim.Ts*[-parD.b1 -parD.b2 -parD.b3 -parD.b4];
-MLDD.B4 = dim.Ts*parD.Rf;
-
-% Constraint matrices diesel generator
-MLDD.E1 = [0 -1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]';
-MLDD.E2 = [0  0 0 0 0 -1 1 -1 1 0 0 -1 1 -1 1 0 0 -1 1 -1 1 0 0 -1 1 -1 1]';
-MLDD.E3 = [1 0 0 -parD.u_up parD.u_low -parD.u_low parD.u_up eps -(parD.u1-eps)+parD.u_up 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
-           1 0 0 0 0 0 0 0 0 -parD.u_up parD.u_low -parD.u_low parD.u_up parD.u1 -(parD.u2-eps)+parD.u_up 0 0 0 0 0 0 0 0 0 0 0 0;
-           1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -parD.u_up parD.u_low -parD.u2 parD.u3 parD.u2 -(parD.u3-eps)+parD.u_up 0 0 0 0 0 0;
-           1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -parD.u_up parD.u_low -parD.u_low parD.u_up parD.u3 -parD.u_up]';
-MLDD.E4 = [0 0 0 1 -1 1 -1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
-           0 0 0 0 0 0 0 0 0 1 -1 1 -1 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
-           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 -1 1 -1 0 0 0 0 0 0 0 0;
-           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 -1 1 -1 0 0]';
-MLDD.g5 = [1; -parD.x_low; parD.x_up; 0; 0; -parD.u_low; parD.u_up; 0; parD.u_up; 0; 0; -parD.u_low; parD.u_up; 0; parD.u_up; 0; 0; -parD.u_low; parD.u_up; 0; parD.u_up; 0; 0; -parD.u_low; parD.u_up; 0; 0];
-
-save('MLDDJoost.mat','MLDD')
-
 %% Defining MLD system diesel generator Jordan
 MLDD.A = 1;
 MLDD.B1 = zeros(1,1);
@@ -139,5 +95,5 @@ MLDD.E4 = [0 0 0 0 0 1 -1 1 -1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
            0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 -1 1 -1 0 0]';
 MLDD.g5 = [parD.u_up; eps; 1; -parD.x_low; parD.x_up; 0; 0; -parD.u_low; parD.u_up; 0; parD.u_up; 0; 0; -parD.u_low; parD.u_up; 0; parD.u_up; 0; 0; -parD.u_low; parD.u_up; 0; parD.u_up; 0; 0; -parD.u_low; parD.u_up; 0; 0];
 
-save('MLDDJordan.mat','MLDD')
+save('MLDD.mat','MLDD')
 

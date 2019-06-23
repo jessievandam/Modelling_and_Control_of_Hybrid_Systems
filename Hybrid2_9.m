@@ -12,6 +12,9 @@ load W1.mat; load W2.mat; load W3.mat; load W4.mat; load W5.mat; load S1.mat; lo
 load Ce.mat;
 
 %%
+parB.x0 = 10;
+parD.x0 = 50;
+
 dim.Tend = 360;
 xb1 = zeros(1,dim.Tend);
 xb2 = zeros(1,dim.Tend);
@@ -24,7 +27,7 @@ x(:,1) = [xb1(1); xb2(1); xd(1)];
 
 %% Defining Pload (needed for the cost)
 
-for k = 1:100
+for k = 1:dim.Tend
     if k <= 20
         Pload(k) = 0;
     elseif k >= 21 && k <= 50
@@ -33,56 +36,6 @@ for k = 1:100
         Pload(k) = 45;
     end
 end
-
-parB.x0 = 10;
-parD.x0 = 50;
-
-% %% MPC loop for battery 1
-% 
-% for  k = 1:50
-%     
-%     Ce(k) = 50 + 50*sin(pi*dim.Ts*k / 12);
-%     
-%     % Minimize
-%     %       W1b1 H + S1b1 V + S2b1 x
-%     % Subject to
-%     %       F1b1 V - F3b1 x <= F2b1 
-%     %       -H - W2b1 V <= 0
-%     %       -H + W2b1 V <= 0
-% 
-%     % names = {'H'; 'V'; 'X'};
-% 
-%     % Cost function to minimize
-%     modelb1.obj = [W1.W1b1 S1.S1b1];
-%     modelb1.modelsense = 'min';
-%     % model.varnames = names;
-%     modelb1.vtype = [repmat('C',dim.Np,1); ...
-%                      repmat('B',dim.Np,1); repmat('C',dim.Np,1); repmat('S',dim.Np,1);];
-% 
-%     % Constraints
-%     modelb1.A = sparse([zeros(size(F1.F1b1,1),size(W1.W1b1,2)) F1.F1b1; ...
-%                         -eye(size(W2.W2b1,1)) -W2.W2b1; ...
-%                         -eye(size(W2.W2b1,1)) W2.W2b1]);
-%     modelb1.rhs = [F2.F2b1+F3.F3b1*xb1(k); zeros(size(W2.W2b1,1),1); zeros(size(W2.W2b1,1),1)];
-%     modelb1.sense = repmat('<',size(F2.F2b1,1)+2*size(W2.W2b1,1),1);
-% 
-%     % Gurobi Solve
-%     gurobi_write(modelb1, 'mip1.lp');
-%     params.outputflag = 0;
-%     result = gurobi(modelb1, params);
-%     disp(result);
-%     
-%     x_opti(:,k) = result.x;
-%     
-%     disp(modelb1.obj(2*dim.Np+1))
-%     
-%     % Battery cost function at time step k
-%     J(k) = result.objval + S2.S2b1*x(:,k) + W3.W3b1*M3.M3b1;
-% 
-%     % Update equation battery 1
-%     xb1(k+1) = MLDB1.A*xb1(k) + MLDB1.B1*result.x(2*dim.Np+1) + MLDB1.B3*result.x(3*dim.Np+1);
-%     
-% end
 
 %%
 
@@ -140,5 +93,5 @@ plot(xd(1,:))
 hold off;
 
 figure; hold on;
-plot(x_opti(10*dim.Np+1,:))
+plot(Pload)
 
