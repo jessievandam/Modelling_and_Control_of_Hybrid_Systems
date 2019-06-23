@@ -6,8 +6,12 @@ addpath(genpath('C:\Documenten\TU Delft\MSc Systems and Control\Q4\Modelling and
 addpath c:\gurobi811\win64\matlab\
 
 %% Loading previously defined data
-load dim.mat; load MLDB1.mat; load MLDB2.mat; load MLDD.mat; load parB.mat; load parD.mat;
+load dim.mat; load MLDB1.mat; load MLDB2.mat; load parB.mat; load parD.mat;
 
+% load MLDD.mat;
+% load MLDDJoost.mat
+load MLDDJordan.mat
+ 
 %% Pload
 for k = 1:100
     if k <= 20
@@ -23,7 +27,6 @@ end
 % M1.M1 matrix for the diesel generator
 M1.M1_d_delta = zeros(dim.Np*size(MLDD.A,1),dim.Np*size(MLDD.B2,2));
 M1.M1_d_u = zeros(dim.Np,dim.Np);
-% TO DO: NOW M1.M1_d_u IS A ZEROS MATRIX BUT MAKE IT GENERAL!
 M1.M1_d_zd = zeros(dim.Np*size(MLDD.A,1),dim.Np*size(MLDD.B3,2));
 
 for np1 = 1:dim.Np % over columns
@@ -71,8 +74,6 @@ for np1 = 1:dim.Np % over columns
 end
 clear np1 np2
 
-% NOTE: MAYBE THIS CAN BE MADE MORE GENERAL (BUT IT'S A LOT OF WORK AND NOT
-% THAT NECESSARY)
 for i = 1:dim.Np
     for j = 1:dim.Np
         if j > i
@@ -98,8 +99,6 @@ M1.M1 = [M1.M1_b1 zeros(dim.Np,size(M1.M1_b2,2)) zeros(dim.Np,size(M1.M1_d,2)); 
 M2.M2_b1 = zeros(dim.Np,size(MLDB1.A,2));
 M2.M2_b2 = zeros(dim.Np,size(MLDB1.A,2));
 M2.M2_d  = zeros(dim.Np,size(MLDD.A,2));
-%TO DO: FIX THAT FOR A DIFFERENT LENGTH OF A, THE M2.M2 MATRIX IS FILLED
-%CORRECTLY
 
 for np = 1:dim.Np
     M2.M2_b1(np,:) = (MLDB1.A)^np; 
@@ -232,7 +231,6 @@ clear n
 F2.F2d = F2.F2d_1 - F2.F2d_2;
 F2.F2 = [F2.F2b1; F2.F2b2; F2.F2d];
 
-%% Constructing F2 for Pimp
 F2.F2new = [F2.F2;
             Pload(1:dim.Np)';
             -Pload(1:dim.Np)'];
@@ -252,8 +250,7 @@ clear n
 F3.F3 = [F3.F3b1 zeros(size(F3.F3b1,1),size(F3.F3b2,2)) zeros(size(F3.F3b1,1),size(F3.F3d,2));
       zeros(size(F3.F3b2,1),size(F3.F3b1,2)) F3.F3b2 zeros(size(F3.F3b2,1),size(F3.F3d,2))
       zeros(size(F3.F3d,1),size(F3.F3b1,2)) zeros(size(F3.F3d,1),size(F3.F3b2,2)) F3.F3d];
-  
-%%
+
 F3.F3new = [F3.F3;
             zeros(2*dim.Np,3)];
 
@@ -264,8 +261,6 @@ W1.W1d = [dim.Wd*ones(1,dim.Np-1) 0];
 W1.W1 = [ W1.W1b1 W1.W1b2 W1.W1d ];
 
 %% W2 matrices again using submatrices
-% Bij W2 moet eigenlijk ook de rij van de Np^e entry 0 zijn, maar omdat
-% W1*W2, doen we dit nu even niet.
 W2.W2b1 = zeros(dim.Np,3*dim.Np);
 W2.W2b2 = zeros(dim.Np,3*dim.Np);
 W2.W2d  = zeros(dim.Np,9*dim.Np);
@@ -335,7 +330,7 @@ W5.W5d  = [zeros(1,4*dim.Np) -Ce(1,1:dim.Np-1) 0 zeros(1,4*dim.Np)];
 
 W5.W5 = [W5.W5b1 W5.W5b2 W5.W5d];
 
-%% S matrices OLD
+%% S matrices
 S1.S1b1 = W3.W3b1*M1.M1_b1+W5.W5b1;
 S1.S1b2 = W3.W3b2*M1.M1_b2+W5.W5b2;
 S1.S1d  = W3.W3d*M1.M1_d+W5.W5d;
@@ -344,7 +339,7 @@ S1.S1 = W3.W3*M1.M1+W5.W5;
 
 S1.S1b1new = [W3.W3b1*M1.M1_b1 Ce(1:dim.Np-1) 0];
 S1.S1b2new = [W3.W3b2*M1.M1_b2 Ce(1:dim.Np-1) 0];
-S1.S1dnew  = [W3.W3d*M1.M1_d+W5.W5d Ce(1:dim.Np-1) 0];
+S1.S1dnew  = [W3.W3d*M1.M1_d Ce(1:dim.Np-1) 0];
 
 S1.S1new = [W3.W3*M1.M1+W5.W5 Ce(1:dim.Np-1) 0];
 
@@ -358,146 +353,6 @@ save('M1.mat','M1'); save('M2.mat','M2'); save('M3.mat','M3');
 save('F1.mat','F1'); save('F2.mat','F2'); save('F3.mat','F3');
 save('W1.mat','W1'); save('W2.mat','W2'); save('W3.mat','W3'); save('W4.mat','W4'); save('W5.mat','W5');
 save('S1.mat','S1'); save('S2.mat','S2');
-
-%% Optimizing entire system
-xb1(1) = parB.x0;
-xb2(1) = parB.x0;
-xd(1)  = parD.x0;
-
-x(:,1) = [xb1(1); xb2(1); xd(1)];
-k = 1;
-
-% Minimize 
-%       W1 H + S1 V + S2 x 
-% Subject to
-%            F1 V <= F2 + F3*x(k)
-%       -H - W2 V <= 0
-%       -H + W2 V <= 0
-
-% names = {'H'; 'V'; 'X'};
-
-% Cost function to minimize
-model.obj = [W1.W1 S1.S1];
-model.modelsense = 'min';
-% model.varnames = names;
-model.vtype = [repmat('C',3*dim.Np,1); ...
-               repmat('B',dim.Np,1); repmat('C',dim.Np,1); repmat('S',dim.Np,1); repmat('B',dim.Np,1); repmat('C',dim.Np,1); repmat('S',dim.Np,1); repmat('B',4*dim.Np,1); repmat('C',dim.Np,1); repmat('S',4*dim.Np,1)];
-
-% Constraints
-model.A = sparse([zeros(size(F1.F1,1),size(W1.W1,2)) F1.F1; ...
-                  -eye(size(W2.W2,1)) -W2.W2; ...
-                  -eye(size(W2.W2,1)) W2.W2 ]);
-model.rhs = [F2.F2+F3.F3*x(:,k); zeros(size(W2.W2,1),1); zeros(size(W2.W2,1),1)];
-model.sense = repmat('<',size(F2.F2,1)+2*size(W2.W2,1),1);
-
-% Gurobi Solve
-gurobi_write(model, 'mip1.lp');
-params.outputflag = 0;
-result = gurobi(model, params);
-disp(result);
-
-% Gurobi Solve 2
-% for v=1:length(names)
-%     fprintf('%s %d\n', names{v}, result.x(v));
-% end
-% fprintf('Obj: %e\n', result.objval);
-% end
-% result = gurobi(model, params);
-% disp(result);
-
-%% Optimizing battery 1
-% Minimize
-%       W1b1 H + S1b1 V + S2b1 x
-% Subject to
-%            F1b1 V <= F2b1 + F3b1*xb1(k) 
-%       -H - W2b1 V <= 0
-%       -H + W2b1 V <= 0
-
-% names = {'H'; 'V'; 'X'};
-
-k = 1;
-xb1(1) = 10;
-
-% Cost function to minimize
-modelb1.obj = [W1.W1b1 S1.S1b1];
-modelb1.modelsense = 'min';
-% model.varnames = names;
-modelb1.vtype = [repmat('C',dim.Np,1); ...
-                 repmat('B',dim.Np,1); repmat('C',dim.Np,1); repmat('S',dim.Np,1);];
-
-% Constraints
-modelb1.A = sparse([zeros(size(F1.F1b1,1),size(W1.W1b1,2)) F1.F1b1; ...
-                    -eye(size(W2.W2b1,1)) -W2.W2b1; ...
-                    -eye(size(W2.W2b1,1)) W2.W2b1]);
-modelb1.rhs = [F2.F2b1+F3.F3b1*xb1(k); zeros(size(W2.W2b1,1),1); zeros(size(W2.W2b1,1),1)];
-modelb1.sense = repmat('<',size(F2.F2b1,1)+2*size(W2.W2b1,1),1);
-
-% Gurobi Solve
-gurobi_write(modelb1, 'mip1.lp');
-params.outputflag = 0;
-result = gurobi(modelb1, params);
-disp(result);
-
-disp(result.x);
-
-%% Optimizing the diesel generator
-xd(1) = 50;
-
-% Minimize
-%       W1b1 H + S1b1 V + S2b1 x
-% Subject to
-%       F1b1 V <= F2b1 + F3d*xd(k)
-%       -H - W2b1 V <= 0
-%       -H + W2b1 V <= 0
-
-% names = {'H'; 'V'; 'X'};
-
-% Cost function to minimize
-modeld.obj = [W1.W1d S1.S1d];
-modeld.modelsense = 'min';
-% model.varnames = names;
-modeld.vtype = [repmat('C',dim.Np,1); ...
-                 repmat('B',4*dim.Np,1); repmat('C',dim.Np,1); repmat('S',4*dim.Np,1)];
-
-% Constraints
-modeld.A = sparse([zeros(size(F1.F1d,1),size(W1.W1d,2)) F1.F1d; ...
-                    -eye(size(W2.W2d,1)) -W2.W2d; ...
-                    -eye(size(W2.W2d,1)) W2.W2d]);
-modeld.rhs = [F2.F2d+F3.F3d*xd(k); zeros(size(W2.W2d,1),1); zeros(size(W2.W2d,1),1)];
-modeld.sense = repmat('<',size(F2.F2d,1)+2*size(W2.W2d,1),1);
-
-% Gurobi Solve
-gurobi_write(modeld, 'mip1.lp');
-params.outputflag = 0;
-result = gurobi(modeld, params);
-disp(result);
-
-%% Optimizing the diesel generator without absolute values
-xd(1) = parD.x0;
-
-% Minimize
-%       S1d V
-% Subject to
-%       F1d V <= F2d + F3d*xd(k)
-
-% names = {'V'};
-
-% Cost function to minimize
-modeld1.obj = [S1.S1d];
-modeld1.modelsense = 'min';
-% model.varnames = names;
-modeld1.vtype = [repmat('B',4*dim.Np,1); repmat('C',dim.Np,1); repmat('S',4*dim.Np,1)];
-
-% Constraints
-modeld1.A = sparse([F1.F1d]);
-modeld1.rhs = [F2.F2d+F3.F3d*xd(k)];
-modeld1.sense = repmat('<',size(F2.F2d,1),1);
-
-% Gurobi Solve
-gurobi_write(modeld1, 'mip1.lp');
-params.outputflag = 0;
-result = gurobi(modeld1, params);
-disp(result);
 
 %% Optimizing entire system NEW
 xb1(1) = parB.x0;
@@ -536,13 +391,5 @@ params.outputflag = 0;
 result = gurobi(model, params);
 disp(result);
 
-% Gurobi Solve 2
-% for v=1:length(names)
-%     fprintf('%s %d\n', names{v}, result.x(v));
-% end
-% fprintf('Obj: %e\n', result.objval);
-% end
-% result = gurobi(model, params);
-% disp(result);
 
 
